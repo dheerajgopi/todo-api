@@ -14,8 +14,8 @@ type mySQLUserRepo struct {
 	DB *sql.DB
 }
 
-// Create will return new object which implements user.Repository
-func Create(db *sql.DB) user.Repository {
+// New will return new object which implements user.Repository
+func New(db *sql.DB) user.Repository {
 	return &mySQLUserRepo{
 		DB: db,
 	}
@@ -50,6 +50,6 @@ func (repo *mySQLUserRepo) getOne(ctx context.Context, query string, args ...int
 
 // GetByID will return user with the given id
 func (repo *mySQLUserRepo) GetByID(ctx context.Context, id int64) (*models.User, error) {
-	query := `SELECT id, name, is_active, created_at, updated_at FROM user where id=?`
+	query := `SELECT id, name, is_active, created_at, updated_at FROM user WHERE id=?`
 	return repo.getOne(ctx, query, id)
 }

@@ -25,12 +25,12 @@ func TestGetByID(t *testing.T) {
 		AddRow(1, "test user", true, time.Now(), time.Now())
 
 	userId := int64(1)
-	query := "SELECT id, name, is_active, created_at, updated_at FROM user where id=\\?"
+	query := "SELECT id, name, is_active, created_at, updated_at FROM user WHERE id=\\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(userId).WillReturnRows(rows)
 
-	repo := repository.Create(db)
+	repo := repository.New(db)
 
 	user, err := repo.GetByID(context.TODO(), userId)
 	assert.NoError(t, err)
