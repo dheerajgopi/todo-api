@@ -48,7 +48,13 @@ func (handler *TaskHandler) Create(res http.ResponseWriter, req *http.Request) {
 		payload["data"] = make(map[string]string)
 
 		respondWithJSON(res, statusCode, payload)
+
+		return
 	}
+
+	var user models.User
+	user.ID = int64(1)
+	newTask.CreatedBy = user
 
 	err = handler.TaskService.Create(timeoutContext, newTask)
 
@@ -63,6 +69,8 @@ func (handler *TaskHandler) Create(res http.ResponseWriter, req *http.Request) {
 		payload["data"] = make(map[string]string)
 
 		respondWithJSON(res, statusCode, payload)
+
+		return
 	}
 
 	payload := make(map[string]interface{})
@@ -81,8 +89,6 @@ func (handler *TaskHandler) Create(res http.ResponseWriter, req *http.Request) {
 }
 
 func validateAndBuildCreateTask(req *http.Request) (*models.Task, error) {
-	// validator := validator.New()
-	// validator.StructExcept(task, )
 	var task models.Task
 	decoder := json.NewDecoder(req.Body)
 
@@ -91,6 +97,10 @@ func validateAndBuildCreateTask(req *http.Request) (*models.Task, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	now := time.Now()
+	task.CreatedAt = now
+	task.UpdatedAt = now
 
 	return &task, nil
 }

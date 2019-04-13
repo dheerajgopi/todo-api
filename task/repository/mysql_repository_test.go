@@ -23,11 +23,11 @@ func TestGetByID(t *testing.T) {
 	defer db.Close()
 
 	rows := sqlmock.
-		NewRows([]string{"id", "description", "created_by", "is_complete", "created_at", "updated_at"}).
-		AddRow(1, "description", 1, false, time.Now(), time.Now())
+		NewRows([]string{"id", "title", "description", "created_by", "is_complete", "created_at", "updated_at"}).
+		AddRow(1, "title", "description", 1, false, time.Now(), time.Now())
 
 	taskId := int64(1)
-	query := "SELECT id, description, created_by, is_complete, created_at, updated_at FROM task WHERE id=\\?"
+	query := "SELECT id, title, description, created_by, is_complete, created_at, updated_at FROM task WHERE id=\\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(taskId).WillReturnRows(rows)
@@ -43,6 +43,7 @@ func TestGetByID(t *testing.T) {
 func TestCreate(t *testing.T) {
 	now := time.Now()
 	task := &models.Task{
+		Title:       "title",
 		Description: "description",
 		CreatedBy: models.User{
 			ID: int64(1),
@@ -60,10 +61,11 @@ func TestCreate(t *testing.T) {
 
 	defer db.Close()
 
-	query := "INSERT INTO task \\(description, created_by, is_complete, created_at, updated_at\\) VALUES \\(\\?, \\?, \\?, \\?, \\?\\)"
+	query := "INSERT INTO task \\(title, description, created_by, is_complete, created_at, updated_at\\) VALUES \\(\\?, \\?, \\?, \\?, \\?, \\?\\)"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectExec().WithArgs(
+		task.Title,
 		task.Description,
 		task.CreatedBy.ID,
 		task.IsComplete,

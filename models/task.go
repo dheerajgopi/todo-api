@@ -7,8 +7,9 @@ import (
 // Task represents task table
 type Task struct {
 	ID          int64     `json:"id"`
-	Description string    `json:"description" validate:"required"`
-	CreatedBy   User      `json:"user" validate:"required"`
+	Title       string    `json:"title" validate:"required"`
+	Description string    `json:"description"`
+	CreatedBy   User      `json:"createdBy" validate:"required"`
 	IsComplete  bool      `json:"isComplete"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`

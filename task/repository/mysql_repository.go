@@ -35,6 +35,7 @@ func (repo *mySQLRepo) getOne(ctx context.Context, query string, args ...interfa
 
 	err = row.Scan(
 		&task.ID,
+		&task.Title,
 		&task.Description,
 		&userID,
 		&task.IsComplete,
@@ -56,15 +57,15 @@ func (repo *mySQLRepo) getOne(ctx context.Context, query string, args ...interfa
 
 // GetByID will return task with the given id
 func (repo *mySQLRepo) GetByID(ctx context.Context, id int64) (*models.Task, error) {
-	query := `SELECT id, description, created_by, is_complete, created_at, updated_at
+	query := `SELECT id, title, description, created_by, is_complete, created_at, updated_at
 		FROM task WHERE id=?`
 	return repo.getOne(ctx, query, id)
 }
 
 // Create will store new task entry
 func (repo *mySQLRepo) Create(ctx context.Context, task *models.Task) error {
-	query := `INSERT INTO task (description, created_by, is_complete, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?)`
+	query := `INSERT INTO task (title, description, created_by, is_complete, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?)`
 
 	stmt, err := repo.DB.PrepareContext(ctx, query)
 
@@ -80,6 +81,7 @@ func (repo *mySQLRepo) Create(ctx context.Context, task *models.Task) error {
 
 	res, err := stmt.ExecContext(
 		ctx,
+		task.Title,
 		task.Description,
 		task.CreatedBy.ID,
 		task.IsComplete,
