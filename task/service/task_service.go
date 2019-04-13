@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -11,23 +10,18 @@ import (
 )
 
 type taskService struct {
-	taskRepo       task.Repository
-	contextTimeout time.Duration
+	taskRepo task.Repository
 }
 
 // New returns a new object implementing task.Service interface
-func New(repo task.Repository, timeout time.Duration) task.Service {
+func New(repo task.Repository) task.Service {
 	return &taskService{
-		taskRepo:       repo,
-		contextTimeout: timeout,
+		taskRepo: repo,
 	}
 }
 
 func (service *taskService) Create(ctx context.Context, newTask *models.Task) error {
-	timeoutContext, cancel := context.WithTimeout(ctx, service.contextTimeout)
-	defer cancel()
-
-	err := service.taskRepo.Create(timeoutContext, newTask)
+	err := service.taskRepo.Create(ctx, newTask)
 
 	if err != nil {
 		logrus.Error(err)
