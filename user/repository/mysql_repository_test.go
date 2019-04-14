@@ -2,8 +2,11 @@ package repository_test
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
+
+	"github.com/dheerajgopi/todo-api/models"
 
 	"github.com/stretchr/testify/assert"
 
@@ -12,6 +15,7 @@ import (
 )
 
 func TestGetByID(t *testing.T) {
+	assert := assert.New(t)
 	db, mock, err := sqlmock.New()
 
 	if err != nil {
@@ -21,11 +25,11 @@ func TestGetByID(t *testing.T) {
 	defer db.Close()
 
 	rows := sqlmock.
-		NewRows([]string{"id", "name", "is_active", "created_at", "updated_at"}).
-		AddRow(1, "test user", true, time.Now(), time.Now())
+		NewRows([]string{"id", "name", "email", "is_active", "created_at", "updated_at"}).
+		AddRow(1, "test user", "test@email.com", true, time.Now(), time.Now())
 
 	userId := int64(1)
-	query := "SELECT id, name, is_active, created_at, updated_at FROM user WHERE id=\\?"
+	query := "SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE id=\\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(userId).WillReturnRows(rows)
@@ -33,6 +37,121 @@ func TestGetByID(t *testing.T) {
 	repo := repository.New(db)
 
 	user, err := repo.GetByID(context.TODO(), userId)
-	assert.NoError(t, err)
-	assert.NotNil(t, user)
+	assert.NoError(err)
+	assert.NotNil(user)
+}
+
+func TestGetByIDWithNoRows(t *testing.T) {
+	assert := assert.New(t)
+	db, mock, err := sqlmock.New()
+
+	if err != nil {
+		t.Fatalf("Unexpected error while opening stub DB connection: %s", err)
+	}
+
+	defer db.Close()
+
+	userId := int64(1)
+	query := "SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE id=\\?"
+
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectQuery().WithArgs(userId).WillReturnError(sql.ErrNoRows)
+
+	repo := repository.New(db)
+
+	user, err := repo.GetByID(context.TODO(), userId)
+	assert.NoError(err)
+	assert.Nil(user)
+}
+
+func TestCreate(t *testing.T) {
+	assert := assert.New(t)
+	now := time.Now()
+	user := &models.User{
+		Name:      "name",
+		Email:     "name@email.com",
+		Passwd:    "secret",
+		IsActive:  true,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	db, mock, err := sqlmock.New()
+
+	if err != nil {
+		t.Fatalf("Unexpected error while opening stub DB connection: %s", err)
+	}
+
+	defer db.Close()
+
+	query := "INSERT INTO user \\(name, email, passwd, is_active, created_at, updated_at\\) VALUES \\(\\?, \\?, \\?, \\?, \\?, \\?\\)"
+	lastInsertID := int64(1)
+
+	mock.ExpectBegin()
+	mock.ExpectExec(query).WithArgs(
+		user.Name,
+		user.Email,
+		user.Passwd,
+		user.IsActive,
+		user.CreatedAt,
+		user.UpdatedAt,
+	).WillReturnResult(sqlmock.NewResult(lastInsertID, 1))
+	mock.ExpectCommit()
+
+	repo := repository.New(db)
+
+	err = repo.Create(context.TODO(), user)
+
+	assert.NoError(err)
+	assert.Equal(lastInsertID, user.ID)
+}
+
+func TestGetByEmail(t *testing.T) {
+	assert := assert.New(t)
+	db, mock, err := sqlmock.New()
+
+	if err != nil {
+		t.Fatalf("Unexpected error while opening stub DB connection: %s", err)
+	}
+
+	defer db.Close()
+
+	rows := sqlmock.
+		NewRows([]string{"id", "name", "email", "is_active", "created_at", "updated_at"}).
+		AddRow(1, "test user", "test@email.com", true, time.Now(), time.Now())
+
+	userEmail := "test@email.com"
+	query := "SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE email=\\?"
+
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectQuery().WithArgs(userEmail).WillReturnRows(rows)
+
+	repo := repository.New(db)
+
+	user, err := repo.GetByEmail(context.TODO(), userEmail)
+	assert.NoError(err)
+	assert.NotNil(user)
+}
+
+func TestGetByEmailWithNoRows(t *testing.T) {
+	assert := assert.New(t)
+	db, mock, err := sqlmock.New()
+
+	if err != nil {
+		t.Fatalf("Unexpected error while opening stub DB connection: %s", err)
+	}
+
+	defer db.Close()
+
+	userEmail := "test@email.com"
+	query := "SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE email=\\?"
+
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectQuery().WithArgs(userEmail).WillReturnError(sql.ErrNoRows)
+
+	repo := repository.New(db)
+
+	user, err := repo.GetByEmail(context.TODO(), userEmail)
+	assert.NoError(err)
+	assert.Nil(user)
 }
