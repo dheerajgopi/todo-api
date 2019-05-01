@@ -25,11 +25,11 @@ func TestGetByID(t *testing.T) {
 	defer db.Close()
 
 	rows := sqlmock.
-		NewRows([]string{"id", "name", "email", "is_active", "created_at", "updated_at"}).
-		AddRow(1, "test user", "test@email.com", true, time.Now(), time.Now())
+		NewRows([]string{"id", "name", "email", "passwd", "is_active", "created_at", "updated_at"}).
+		AddRow(1, "test user", "test@email.com", "passwd", true, time.Now(), time.Now())
 
 	userId := int64(1)
-	query := "SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE id=\\?"
+	query := "SELECT id, name, email, passwd, is_active, created_at, updated_at FROM user WHERE id=\\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(userId).WillReturnRows(rows)
@@ -52,7 +52,7 @@ func TestGetByIDWithNoRows(t *testing.T) {
 	defer db.Close()
 
 	userId := int64(1)
-	query := "SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE id=\\?"
+	query := "SELECT id, name, email, passwd, is_active, created_at, updated_at FROM user WHERE id=\\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(userId).WillReturnError(sql.ErrNoRows)
@@ -117,11 +117,11 @@ func TestGetByEmail(t *testing.T) {
 	defer db.Close()
 
 	rows := sqlmock.
-		NewRows([]string{"id", "name", "email", "is_active", "created_at", "updated_at"}).
-		AddRow(1, "test user", "test@email.com", true, time.Now(), time.Now())
+		NewRows([]string{"id", "name", "email", "passwd", "is_active", "created_at", "updated_at"}).
+		AddRow(1, "test user", "test@email.com", "passwd", true, time.Now(), time.Now())
 
 	userEmail := "test@email.com"
-	query := "SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE email=\\?"
+	query := "SELECT id, name, email, passwd, is_active, created_at, updated_at FROM user WHERE email=\\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(userEmail).WillReturnRows(rows)
@@ -144,7 +144,7 @@ func TestGetByEmailWithNoRows(t *testing.T) {
 	defer db.Close()
 
 	userEmail := "test@email.com"
-	query := "SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE email=\\?"
+	query := "SELECT id, name, email, passwd, is_active, created_at, updated_at FROM user WHERE email=\\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(userEmail).WillReturnError(sql.ErrNoRows)

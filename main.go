@@ -59,6 +59,7 @@ func main() {
 
 	config := &common.AppConfig{
 		RequestTimeout: timeout,
+		JwtSecret:      "secret",
 	}
 
 	app := &common.App{

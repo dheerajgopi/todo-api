@@ -33,6 +33,7 @@ func (repo *mySQLUserRepo) getOne(ctx context.Context, query string, args ...int
 		&user.ID,
 		&user.Name,
 		&user.Email,
+		&user.Passwd,
 		&user.IsActive,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -51,7 +52,7 @@ func (repo *mySQLUserRepo) getOne(ctx context.Context, query string, args ...int
 
 // GetByID will return user with the given id
 func (repo *mySQLUserRepo) GetByID(ctx context.Context, id int64) (*models.User, error) {
-	query := `SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE id=?`
+	query := `SELECT id, name, email, passwd, is_active, created_at, updated_at FROM user WHERE id=?`
 	return repo.getOne(ctx, query, id)
 }
 
@@ -101,6 +102,6 @@ func (repo *mySQLUserRepo) Create(ctx context.Context, user *models.User) error 
 
 // GetByEmail will return user with the given email
 func (repo *mySQLUserRepo) GetByEmail(ctx context.Context, email string) (*models.User, error) {
-	query := `SELECT id, name, email, is_active, created_at, updated_at FROM user WHERE email=?`
+	query := `SELECT id, name, email, passwd, is_active, created_at, updated_at FROM user WHERE email=?`
 	return repo.getOne(ctx, query, email)
 }

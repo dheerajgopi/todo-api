@@ -23,3 +23,12 @@ type DataConflictError struct {
 func (dce *DataConflictError) Error() string {
 	return fmt.Sprintf("Conflicting data for %s field in %s resource", dce.Field, dce.Resource)
 }
+
+// ResourceNotFoundError indicates missing resource
+type ResourceNotFoundError struct {
+	Resource string
+}
+
+func (rnf *ResourceNotFoundError) Error() string {
+	return fmt.Sprintf("%s not found", rnf.Resource)
+}

@@ -30,6 +30,10 @@ func (app *App) CreateHandler(fn handlerFunc) func(res http.ResponseWriter, req 
 
 		status, data, apiError := fn(res, req, reqCtx)
 
+		reqCtx.AddLogFields(logrus.Fields{
+			"status": status,
+		})
+
 		switch status {
 		case http.StatusOK:
 			reqCtx.Response.Status = 200
@@ -70,6 +74,7 @@ func (app *App) CreateHandler(fn handlerFunc) func(res http.ResponseWriter, req 
 // AppConfig holds application global settings
 type AppConfig struct {
 	RequestTimeout time.Duration
+	JwtSecret      string
 }
 
 // NewRequestContext creates new struct to store request scoped data

@@ -27,6 +27,7 @@ func New(router *mux.Router, service user.Service, app *common.App) {
 	}
 
 	router.HandleFunc("/users", app.CreateHandler(handler.Create)).Methods("POST")
+	router.HandleFunc("/login", app.CreateHandler(handler.Login)).Methods("POST")
 }
 
 // Create will store new user
@@ -117,4 +118,85 @@ func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, r
 	}
 
 	return http.StatusCreated, userData, nil
+}
+
+// Login will validate user credentials and return a token
+func (handler *UserHandler) Login(res http.ResponseWriter, req *http.Request, reqCtx *common.RequestContext) (int, interface{}, *common.AppError) {
+	timeoutContext, cancel := context.WithTimeout(context.TODO(), handler.App.Config.RequestTimeout)
+	defer cancel()
+	defer req.Body.Close()
+
+	decoder := json.NewDecoder(req.Body)
+	var loginReqBody LoginRequest
+	err := decoder.Decode(&loginReqBody)
+
+	if err != nil {
+		reqCtx.AddLogMessage("Invalid request body")
+		requestBodyError := make([]*common.APIError, 0)
+		requestBodyError = append(requestBodyError, &common.APIError{
+			Message: "Invalid request body",
+		})
+
+		apiError := &common.AppError{
+			Errors: requestBodyError,
+		}
+
+		return http.StatusBadRequest, nil, apiError
+	}
+
+	validationErrors := loginReqBody.ValidateAndBuild()
+
+	if len(validationErrors) > 0 {
+		reqCtx.AddLogMessage("validation error")
+
+		apiError := &common.AppError{
+			Errors: validationErrors,
+		}
+
+		return http.StatusBadRequest, nil, apiError
+	}
+
+	token, err := handler.UserService.GenerateAuthToken(
+		timeoutContext,
+		loginReqBody.Email,
+		loginReqBody.Passwd,
+		handler.App.Config.JwtSecret,
+	)
+
+	switch err.(type) {
+	case nil:
+		break
+	case *common.ResourceNotFoundError:
+		resourceNotFoundErr, _ := err.(*common.ResourceNotFoundError)
+		notFoundError := make([]*common.APIError, 0)
+		notFoundError = append(notFoundError, &common.APIError{
+			Message: "Not found",
+			Target:  "user",
+		})
+
+		apiError := &common.AppError{
+			Message: resourceNotFoundErr.Error(),
+			Errors:  notFoundError,
+		}
+
+		return http.StatusNotFound, nil, apiError
+	default:
+		serverError := make([]*common.APIError, 0)
+		serverError = append(serverError, &common.APIError{
+			Message: "Internal server error",
+		})
+
+		apiError := &common.AppError{
+			Message: err.Error(),
+			Errors:  serverError,
+		}
+
+		return http.StatusInternalServerError, nil, apiError
+	}
+
+	loginResponse := LoginResponse{
+		Token: token,
+	}
+
+	return http.StatusOK, loginResponse, nil
 }

@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/dheerajgopi/todo-api/common"
 	"github.com/dheerajgopi/todo-api/models"
 	"github.com/dheerajgopi/todo-api/user"
@@ -20,6 +22,7 @@ func New(repo user.Repository) user.Service {
 	}
 }
 
+// Create creates a new user
 func (service *userService) Create(ctx context.Context, newUser *models.User) error {
 	email := newUser.Email
 
@@ -53,4 +56,47 @@ func (service *userService) Create(ctx context.Context, newUser *models.User) er
 	}
 
 	return nil
+}
+
+// GenerateAuthToken validates the password and generates JWT
+func (service *userService) GenerateAuthToken(ctx context.Context, email string, pswd string, secret string) (string, error) {
+	user, err := service.userRepo.GetByEmail(ctx, email)
+
+	if err != nil {
+		return "", err
+	}
+
+	if user == nil {
+		resourceNotFoundError := common.ResourceNotFoundError{
+			Resource: "user",
+		}
+
+		return "", &resourceNotFoundError
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Passwd), []byte(pswd))
+
+	if err != nil {
+		return "", err
+	}
+
+	now := time.Now()
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"iss":    "todo-api",
+		"sub":    "user",
+		"userId": user.ID,
+		"name":   user.Name,
+		"email":  user.Email,
+		"iat":    now,
+		"exp":    now.Add(1 * time.Hour),
+	})
+
+	signedToken, err := token.SignedString([]byte(secret))
+
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
 }
