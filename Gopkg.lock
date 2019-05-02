@@ -18,12 +18,79 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
+  version = "v3.2.0"
+
+[[projects]]
+  digest = "1:e1ff887e232b2d8f4f7c7db15a5fac7be418025afc4dda53c59c765dbb5aa6b4"
+  name = "github.com/go-playground/locales"
+  packages = [
+    ".",
+    "currency",
+  ]
+  pruneopts = "UT"
+  revision = "f63010822830b6fe52288ee52d5a1151088ce039"
+  version = "v0.12.1"
+
+[[projects]]
+  digest = "1:e022cf244bcac1b6ef933f1a2e0adcf6a6dfd7b872d8d41e4d4179bb09a87cbc"
+  name = "github.com/go-playground/universal-translator"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b32fa301c9fe55953584134cb6853a13c87ec0a1"
+  version = "v0.16.0"
+
+[[projects]]
+  digest = "1:ec6f9bf5e274c833c911923c9193867f3f18788c461f76f05f62bb1510e0ae65"
+  name = "github.com/go-sql-driver/mysql"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "72cd26f257d44c1114970e19afddcd812016007e"
+  version = "v1.4.1"
+
+[[projects]]
+  digest = "1:b60efdeb75d3c0ceed88783ac2495256aba3491a537d0f31401202579fd62a94"
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  pruneopts = "UT"
+  revision = "51421b967af1f557f93a59e0057aaf15ca02e29c"
+  version = "v1.2.0"
+
+[[projects]]
+  digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
+
+[[projects]]
+  digest = "1:d5f97fc268267ec1b61c3453058c738246fc3e746f14b1ae25161513b7367b0c"
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c5c6c98bc25355028a63748a498942a6398ccd22"
+  version = "v1.7.1"
+
+[[projects]]
   digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
   pruneopts = "UT"
   revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
   version = "v1.0.2"
+
+[[projects]]
+  digest = "1:6782ffc812e8e700e6952ede1e60487ff1fd9da489eff762985be662a7cfc431"
+  name = "github.com/leodido/go-urn"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "70078a794e8ea4b497ba7c19a78cd60f90ccf0f4"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
@@ -51,19 +118,62 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:9d5b5d543996dd584da1db1e0de1926f3e4c3a8dba0fa2f8db70f3ebee2342e0"
+  name = "golang.org/x/crypto"
+  packages = [
+    "bcrypt",
+    "blowfish",
+  ]
+  pruneopts = "UT"
+  revision = "88737f569e3a9c7ab309cdc09a07fe7fc87233c3"
+
+[[projects]]
+  branch = "master"
   digest = "1:cf353a5a9ffb2d6f850e9c773e25388a425a70c270546480427ed069e87b136a"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
   revision = "4b34438f7a67ee5f45cc6132e2bad873a20324e9"
 
+[[projects]]
+  digest = "1:c25289f43ac4a68d88b02245742347c94f1e108c534dda442188015ff80669b3"
+  name = "google.golang.org/appengine"
+  packages = ["cloudsql"]
+  pruneopts = "UT"
+  revision = "54a98f90d1c46b7731eb8fb305d2a321c30ef610"
+  version = "v1.5.0"
+
+[[projects]]
+  digest = "1:7bb1ad654b21fb8f44c77c07840007d6796f70d42d1b470600f943a508ff8a72"
+  name = "gopkg.in/go-playground/validator.v9"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "46b4b1e301c24cac870ffcb4ba5c8a703d1ef475"
+  version = "v9.28.0"
+
+[[projects]]
+  digest = "1:c805e517269b0ba4c21ded5836019ed7d16953d4026cb7d00041d039c7906be9"
+  name = "gopkg.in/natefinch/lumberjack.v2"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "a96e63847dc3c67d17befa69c303767e2f84e54f"
+  version = "v2.1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
     "github.com/DATA-DOG/go-sqlmock",
+    "github.com/dgrijalva/jwt-go",
+    "github.com/go-sql-driver/mysql",
+    "github.com/golang/mock/gomock",
+    "github.com/google/uuid",
+    "github.com/gorilla/mux",
     "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
+    "golang.org/x/crypto/bcrypt",
+    "gopkg.in/go-playground/validator.v9",
+    "gopkg.in/natefinch/lumberjack.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
