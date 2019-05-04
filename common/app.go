@@ -66,6 +66,7 @@ func (app *App) CreateHandler(fn handlerFunc) func(res http.ResponseWriter, req 
 		response, _ := json.Marshal(reqCtx.Response)
 
 		res.Header().Set("Content-Type", "application/json")
+		res.Header().Set("X-Request-ID", reqCtx.RequestID)
 		res.WriteHeader(reqCtx.Response.Status)
 		res.Write(response)
 	}
