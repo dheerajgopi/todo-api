@@ -2,10 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"time"
 
 	"gopkg.in/natefinch/lumberjack.v2"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	common "github.com/dheerajgopi/todo-api/common"
+	"github.com/dheerajgopi/todo-api/config"
 	_userHttpDelivery "github.com/dheerajgopi/todo-api/user/delivery/http"
 	_userRepo "github.com/dheerajgopi/todo-api/user/repository"
 	_userService "github.com/dheerajgopi/todo-api/user/service"
@@ -20,16 +22,6 @@ import (
 )
 
 func main() {
-	timeout := 5 * time.Second
-
-	dbConfig := mysql.NewConfig()
-	dbConfig.User = "root"
-	dbConfig.Passwd = "root"
-	dbConfig.Addr = "0.0.0.0:3307"
-	dbConfig.DBName = "todo"
-	dbConfig.Net = "tcp"
-	dbConfig.ParseTime = true
-
 	// initialize logger
 	logRotate := &lumberjack.Logger{
 		Filename:   "application.log",
@@ -46,6 +38,20 @@ func main() {
 	logger.SetOutput(logWriters)
 	logger.SetFormatter(&logrus.JSONFormatter{})
 
+	cfg := &config.Config{}
+	if err := cfg.Load(); err != nil {
+		logger.Errorf("Error loading config: %v", err)
+		os.Exit(1)
+	}
+
+	dbConfig := mysql.NewConfig()
+	dbConfig.User = "root"
+	dbConfig.Passwd = "root"
+	dbConfig.Addr = "0.0.0.0:3307"
+	dbConfig.DBName = "todo"
+	dbConfig.Net = "tcp"
+	dbConfig.ParseTime = true
+
 	// initialize DB
 	dbConn, err := sql.Open("mysql", dbConfig.FormatDSN())
 	err = dbConn.Ping()
@@ -57,15 +63,14 @@ func main() {
 
 	defer dbConn.Close()
 
-	config := &common.AppConfig{
-		RequestTimeout: timeout,
-		JwtSecret:      "secret",
-	}
-
 	app := &common.App{
-		Config: config,
+		Config: cfg,
 		Logger: logger,
 	}
+
+	cfgJson, err := json.Marshal(app.Config)
+
+	fmt.Println(string(cfgJson))
 
 	router := mux.NewRouter()
 	userRepo := _userRepo.New(dbConn)
