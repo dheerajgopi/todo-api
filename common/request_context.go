@@ -1,6 +1,8 @@
 package common
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,6 +21,7 @@ func (reqCtx *RequestContext) AddLogFields(fields logrus.Fields) {
 // AddLogMessage will add the message to the LogEntry
 func (reqCtx *RequestContext) AddLogMessage(message string) {
 	reqCtx.LogEntry.Message = message
+	fmt.Println(reqCtx.LogEntry.Message)
 }
 
 // LogInfo will write info level log

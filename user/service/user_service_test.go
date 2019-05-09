@@ -12,7 +12,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/dheerajgopi/todo-api/common"
+	todoErr "github.com/dheerajgopi/todo-api/common/error"
 	"github.com/dheerajgopi/todo-api/models"
 	repoMock "github.com/dheerajgopi/todo-api/user/mock"
 	"github.com/dheerajgopi/todo-api/user/service"
@@ -25,7 +25,7 @@ func TestCreate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	userRepoMock := repoMock.NewMockRepository(mockCtrl)
+	userRepoMock := repoMock.NewRepository(mockCtrl)
 	userService := service.New(userRepoMock)
 
 	newUser := &models.User{
@@ -68,7 +68,7 @@ func TestCreateForAlreadyExistingUser(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	userRepoMock := repoMock.NewMockRepository(mockCtrl)
+	userRepoMock := repoMock.NewRepository(mockCtrl)
 	userService := service.New(userRepoMock)
 
 	newUser := &models.User{
@@ -86,7 +86,7 @@ func TestCreateForAlreadyExistingUser(t *testing.T) {
 		Return(newUser, nil).
 		Times(1)
 
-	dataConflictErr := &common.DataConflictError{
+	dataConflictErr := &todoErr.DataConflictError{
 		Resource: "user",
 		Field:    "email",
 	}
@@ -104,7 +104,7 @@ func TestGenerateAuthToken(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	userRepoMock := repoMock.NewMockRepository(mockCtrl)
+	userRepoMock := repoMock.NewRepository(mockCtrl)
 	userService := service.New(userRepoMock)
 
 	email := "testName@email.com"
@@ -144,7 +144,7 @@ func TestGenerateAuthTokenForMissingUser(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	userRepoMock := repoMock.NewMockRepository(mockCtrl)
+	userRepoMock := repoMock.NewRepository(mockCtrl)
 	userService := service.New(userRepoMock)
 
 	email := "testName@email.com"
@@ -159,7 +159,7 @@ func TestGenerateAuthTokenForMissingUser(t *testing.T) {
 
 	token, err := userService.GenerateAuthToken(ctx, email, passwd, jwtSecret)
 
-	resourceNotFoundError := &common.ResourceNotFoundError{
+	resourceNotFoundError := &todoErr.ResourceNotFoundError{
 		Resource: "user",
 	}
 

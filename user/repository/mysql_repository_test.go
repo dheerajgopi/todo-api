@@ -28,15 +28,15 @@ func TestGetByID(t *testing.T) {
 		NewRows([]string{"id", "name", "email", "passwd", "is_active", "created_at", "updated_at"}).
 		AddRow(1, "test user", "test@email.com", "passwd", true, time.Now(), time.Now())
 
-	userId := int64(1)
+	userID := int64(1)
 	query := "SELECT id, name, email, passwd, is_active, created_at, updated_at FROM user WHERE id=\\?"
 
 	prep := mock.ExpectPrepare(query)
-	prep.ExpectQuery().WithArgs(userId).WillReturnRows(rows)
+	prep.ExpectQuery().WithArgs(userID).WillReturnRows(rows)
 
 	repo := repository.New(db)
 
-	user, err := repo.GetByID(context.TODO(), userId)
+	user, err := repo.GetByID(context.TODO(), userID)
 	assert.NoError(err)
 	assert.NotNil(user)
 }
@@ -51,15 +51,15 @@ func TestGetByIDWithNoRows(t *testing.T) {
 
 	defer db.Close()
 
-	userId := int64(1)
+	userID := int64(1)
 	query := "SELECT id, name, email, passwd, is_active, created_at, updated_at FROM user WHERE id=\\?"
 
 	prep := mock.ExpectPrepare(query)
-	prep.ExpectQuery().WithArgs(userId).WillReturnError(sql.ErrNoRows)
+	prep.ExpectQuery().WithArgs(userID).WillReturnError(sql.ErrNoRows)
 
 	repo := repository.New(db)
 
-	user, err := repo.GetByID(context.TODO(), userId)
+	user, err := repo.GetByID(context.TODO(), userID)
 	assert.NoError(err)
 	assert.Nil(user)
 }

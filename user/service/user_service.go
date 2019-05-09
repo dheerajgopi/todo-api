@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/dheerajgopi/todo-api/common"
+	_err "github.com/dheerajgopi/todo-api/common/error"
 	"github.com/dheerajgopi/todo-api/models"
 	"github.com/dheerajgopi/todo-api/user"
 	"golang.org/x/crypto/bcrypt"
@@ -33,7 +33,7 @@ func (service *userService) Create(ctx context.Context, newUser *models.User) er
 	}
 
 	if existingUser != nil {
-		err := common.DataConflictError{
+		err := _err.DataConflictError{
 			Resource: "user",
 			Field:    "email",
 		}
@@ -67,7 +67,7 @@ func (service *userService) GenerateAuthToken(ctx context.Context, email string,
 	}
 
 	if user == nil {
-		resourceNotFoundError := common.ResourceNotFoundError{
+		resourceNotFoundError := _err.ResourceNotFoundError{
 			Resource: "user",
 		}
 

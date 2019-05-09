@@ -1,2 +1,2 @@
 -- drop table user
-DROP TABLE `user`;
+DROP TABLE user;
