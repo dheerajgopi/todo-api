@@ -3,16 +3,16 @@ package common
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 
+	"github.com/dheerajgopi/todo-api/config"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 // App stores app config
 type App struct {
-	Config *AppConfig
 	Logger *logrus.Logger
+	Config *config.Config
 }
 
 // CreateHandler creates a new HandlerFunc with a new RequestContext per request
@@ -70,12 +70,6 @@ func (app *App) CreateHandler(fn handlerFunc) func(res http.ResponseWriter, req 
 		res.WriteHeader(reqCtx.Response.Status)
 		res.Write(response)
 	}
-}
-
-// AppConfig holds application global settings
-type AppConfig struct {
-	RequestTimeout time.Duration
-	JwtSecret      string
 }
 
 // NewRequestContext creates new struct to store request scoped data

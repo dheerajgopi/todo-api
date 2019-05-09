@@ -32,7 +32,8 @@ func New(router *mux.Router, service user.Service, app *common.App) {
 
 // Create will store new user
 func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, reqCtx *common.RequestContext) (int, interface{}, *common.AppError) {
-	timeoutContext, cancel := context.WithTimeout(context.TODO(), handler.App.Config.RequestTimeout)
+	timeoutInSec := time.Duration(handler.App.Config.Application.RequestTimeout) * time.Second
+	timeoutContext, cancel := context.WithTimeout(context.TODO(), timeoutInSec)
 	defer cancel()
 	defer req.Body.Close()
 
@@ -122,7 +123,8 @@ func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, r
 
 // Login will validate user credentials and return a token
 func (handler *UserHandler) Login(res http.ResponseWriter, req *http.Request, reqCtx *common.RequestContext) (int, interface{}, *common.AppError) {
-	timeoutContext, cancel := context.WithTimeout(context.TODO(), handler.App.Config.RequestTimeout)
+	timeoutInSec := time.Duration(handler.App.Config.Application.RequestTimeout) * time.Second
+	timeoutContext, cancel := context.WithTimeout(context.TODO(), timeoutInSec)
 	defer cancel()
 	defer req.Body.Close()
 
@@ -160,7 +162,7 @@ func (handler *UserHandler) Login(res http.ResponseWriter, req *http.Request, re
 		timeoutContext,
 		loginReqBody.Email,
 		loginReqBody.Passwd,
-		handler.App.Config.JwtSecret,
+		handler.App.Config.Auth.Jwt.Secret,
 	)
 
 	switch err.(type) {

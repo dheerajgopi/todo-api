@@ -1,0 +1,18 @@
+{
+    "application": {
+        "port": 8080,
+        "requestTimeout": 5
+    },
+    "db": {
+        "address": "0.0.0.0:3307",
+        "name": "todo",
+        "user": "root",
+        "password": "root"
+    },
+    "auth": {
+        "jwt": {
+            "secret": "secret",
+            "expiryInSeconds": 86400
+        }
+    }
+}
