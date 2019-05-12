@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dheerajgopi/todo-api/common"
+	todoErr "github.com/dheerajgopi/todo-api/common/error"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -26,23 +26,23 @@ type CreateUserRequest struct {
 }
 
 // Validate validates the request body for POST /users API
-func (body *CreateUserRequest) Validate() []*common.APIError {
+func (body *CreateUserRequest) Validate() []*todoErr.APIErrorBody {
 	name := body.Name
 	email := body.Email
 	pswd := body.Password
 
 	validator := validator.New()
-	validationErrors := make([]*common.APIError, 0)
+	validationErrors := make([]*todoErr.APIErrorBody, 0)
 
 	if strings.TrimSpace(name) == "" {
-		validationErrors = append(validationErrors, &common.APIError{
+		validationErrors = append(validationErrors, &todoErr.APIErrorBody{
 			Message: "Non-empty value is required",
 			Target:  "name",
 		})
 	}
 
 	if strings.TrimSpace(email) == "" {
-		validationErrors = append(validationErrors, &common.APIError{
+		validationErrors = append(validationErrors, &todoErr.APIErrorBody{
 			Message: "Non-empty value is required",
 			Target:  "email",
 		})
@@ -50,7 +50,7 @@ func (body *CreateUserRequest) Validate() []*common.APIError {
 		emailErr := validator.Var(email, "email")
 
 		if emailErr != nil {
-			validationErrors = append(validationErrors, &common.APIError{
+			validationErrors = append(validationErrors, &todoErr.APIErrorBody{
 				Message: "Invalid value",
 				Target:  "email",
 			})
@@ -60,12 +60,12 @@ func (body *CreateUserRequest) Validate() []*common.APIError {
 	trimmedPswd := strings.TrimSpace(pswd)
 
 	if trimmedPswd == "" {
-		validationErrors = append(validationErrors, &common.APIError{
+		validationErrors = append(validationErrors, &todoErr.APIErrorBody{
 			Message: "Non-empty value is required",
 			Target:  "password",
 		})
 	} else if len(trimmedPswd) < 6 {
-		validationErrors = append(validationErrors, &common.APIError{
+		validationErrors = append(validationErrors, &todoErr.APIErrorBody{
 			Message: "Length should be 6 or more",
 			Target:  "password",
 		})
@@ -81,18 +81,18 @@ type LoginRequest struct {
 }
 
 // ValidateAndBuild validates the request body for POST /login API
-func (body *LoginRequest) ValidateAndBuild() []*common.APIError {
+func (body *LoginRequest) ValidateAndBuild() []*todoErr.APIErrorBody {
 	email := body.Email
 	passwd := body.Passwd
 
 	validator := validator.New()
-	validationErrors := make([]*common.APIError, 0)
+	validationErrors := make([]*todoErr.APIErrorBody, 0)
 
 	trimmedEmail := strings.TrimSpace(email)
 	trimmedPassword := strings.TrimSpace(passwd)
 
 	if trimmedEmail == "" {
-		validationErrors = append(validationErrors, &common.APIError{
+		validationErrors = append(validationErrors, &todoErr.APIErrorBody{
 			Message: "Non-empty value is required",
 			Target:  "email",
 		})
@@ -100,7 +100,7 @@ func (body *LoginRequest) ValidateAndBuild() []*common.APIError {
 		emailErr := validator.Var(trimmedEmail, "email")
 
 		if emailErr != nil {
-			validationErrors = append(validationErrors, &common.APIError{
+			validationErrors = append(validationErrors, &todoErr.APIErrorBody{
 				Message: "Invalid value",
 				Target:  "email",
 			})
@@ -108,7 +108,7 @@ func (body *LoginRequest) ValidateAndBuild() []*common.APIError {
 	}
 
 	if trimmedPassword == "" {
-		validationErrors = append(validationErrors, &common.APIError{
+		validationErrors = append(validationErrors, &todoErr.APIErrorBody{
 			Message: "Non-empty value is required",
 			Target:  "password",
 		})

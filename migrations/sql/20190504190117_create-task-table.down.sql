@@ -1,2 +1,2 @@
 -- drop task table
-DROP TABLE `task`;
+DROP TABLE task;

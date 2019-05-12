@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dheerajgopi/todo-api/common"
+	todoErr "github.com/dheerajgopi/todo-api/common/error"
 	"github.com/dheerajgopi/todo-api/models"
 
 	"github.com/dheerajgopi/todo-api/user"
@@ -31,7 +32,7 @@ func New(router *mux.Router, service user.Service, app *common.App) {
 }
 
 // Create will store new user
-func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, reqCtx *common.RequestContext) (int, interface{}, *common.AppError) {
+func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, reqCtx *common.RequestContext) (int, interface{}, *todoErr.APIError) {
 	timeoutInSec := time.Duration(handler.App.Config.Application.RequestTimeout) * time.Second
 	timeoutContext, cancel := context.WithTimeout(context.TODO(), timeoutInSec)
 	defer cancel()
@@ -43,14 +44,9 @@ func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, r
 
 	if err != nil {
 		reqCtx.AddLogMessage("Invalid request body")
-		requestBodyError := make([]*common.APIError, 0)
-		requestBodyError = append(requestBodyError, &common.APIError{
+		apiError := todoErr.NewAPIError("", &todoErr.APIErrorBody{
 			Message: "Invalid request body",
 		})
-
-		apiError := &common.AppError{
-			Errors: requestBodyError,
-		}
 
 		return http.StatusBadRequest, nil, apiError
 	}
@@ -59,10 +55,7 @@ func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, r
 
 	if len(validationErrors) > 0 {
 		reqCtx.AddLogMessage("validation error")
-
-		apiError := &common.AppError{
-			Errors: validationErrors,
-		}
+		apiError := todoErr.NewAPIError("", validationErrors...)
 
 		return http.StatusBadRequest, nil, apiError
 	}
@@ -81,30 +74,19 @@ func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, r
 	switch err = handler.UserService.Create(timeoutContext, &newUser); err.(type) {
 	case nil:
 		break
-	case *common.DataConflictError:
-		dataConflictErr, _ := err.(*common.DataConflictError)
-		conflictError := make([]*common.APIError, 0)
-		conflictError = append(conflictError, &common.APIError{
+	case *todoErr.DataConflictError:
+		dataConflictErr, _ := err.(*todoErr.DataConflictError)
+
+		apiError := todoErr.NewAPIError(dataConflictErr.Error(), &todoErr.APIErrorBody{
 			Message: "Conflicting data",
 			Target:  dataConflictErr.Field,
 		})
 
-		apiError := &common.AppError{
-			Message: dataConflictErr.Error(),
-			Errors:  conflictError,
-		}
-
 		return http.StatusConflict, nil, apiError
 	default:
-		serverError := make([]*common.APIError, 0)
-		serverError = append(serverError, &common.APIError{
+		apiError := todoErr.NewAPIError(err.Error(), &todoErr.APIErrorBody{
 			Message: "Internal server error",
 		})
-
-		apiError := &common.AppError{
-			Message: err.Error(),
-			Errors:  serverError,
-		}
 
 		return http.StatusInternalServerError, nil, apiError
 	}
@@ -122,7 +104,7 @@ func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, r
 }
 
 // Login will validate user credentials and return a token
-func (handler *UserHandler) Login(res http.ResponseWriter, req *http.Request, reqCtx *common.RequestContext) (int, interface{}, *common.AppError) {
+func (handler *UserHandler) Login(res http.ResponseWriter, req *http.Request, reqCtx *common.RequestContext) (int, interface{}, *todoErr.APIError) {
 	timeoutInSec := time.Duration(handler.App.Config.Application.RequestTimeout) * time.Second
 	timeoutContext, cancel := context.WithTimeout(context.TODO(), timeoutInSec)
 	defer cancel()
@@ -134,14 +116,9 @@ func (handler *UserHandler) Login(res http.ResponseWriter, req *http.Request, re
 
 	if err != nil {
 		reqCtx.AddLogMessage("Invalid request body")
-		requestBodyError := make([]*common.APIError, 0)
-		requestBodyError = append(requestBodyError, &common.APIError{
+		apiError := todoErr.NewAPIError("", &todoErr.APIErrorBody{
 			Message: "Invalid request body",
 		})
-
-		apiError := &common.AppError{
-			Errors: requestBodyError,
-		}
 
 		return http.StatusBadRequest, nil, apiError
 	}
@@ -150,10 +127,7 @@ func (handler *UserHandler) Login(res http.ResponseWriter, req *http.Request, re
 
 	if len(validationErrors) > 0 {
 		reqCtx.AddLogMessage("validation error")
-
-		apiError := &common.AppError{
-			Errors: validationErrors,
-		}
+		apiError := todoErr.NewAPIError("", validationErrors...)
 
 		return http.StatusBadRequest, nil, apiError
 	}
@@ -168,30 +142,19 @@ func (handler *UserHandler) Login(res http.ResponseWriter, req *http.Request, re
 	switch err.(type) {
 	case nil:
 		break
-	case *common.ResourceNotFoundError:
-		resourceNotFoundErr, _ := err.(*common.ResourceNotFoundError)
-		notFoundError := make([]*common.APIError, 0)
-		notFoundError = append(notFoundError, &common.APIError{
+	case *todoErr.ResourceNotFoundError:
+		resourceNotFoundErr, _ := err.(*todoErr.ResourceNotFoundError)
+
+		apiError := todoErr.NewAPIError(resourceNotFoundErr.Error(), &todoErr.APIErrorBody{
 			Message: "Not found",
 			Target:  "user",
 		})
 
-		apiError := &common.AppError{
-			Message: resourceNotFoundErr.Error(),
-			Errors:  notFoundError,
-		}
-
 		return http.StatusNotFound, nil, apiError
 	default:
-		serverError := make([]*common.APIError, 0)
-		serverError = append(serverError, &common.APIError{
+		apiError := todoErr.NewAPIError(err.Error(), &todoErr.APIErrorBody{
 			Message: "Internal server error",
 		})
-
-		apiError := &common.AppError{
-			Message: err.Error(),
-			Errors:  serverError,
-		}
 
 		return http.StatusInternalServerError, nil, apiError
 	}

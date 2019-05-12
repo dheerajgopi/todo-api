@@ -2,8 +2,10 @@ package common
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	todoErr "github.com/dheerajgopi/todo-api/common/error"
 	"github.com/dheerajgopi/todo-api/config"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -45,20 +47,21 @@ func (app *App) CreateHandler(fn handlerFunc) func(res http.ResponseWriter, req 
 			reqCtx.LogInfo()
 		case http.StatusBadRequest:
 			reqCtx.Response.Status = 400
-			reqCtx.Response.Errors = apiError.Errors
+			reqCtx.Response.Errors = apiError.Body
+			fmt.Println(reqCtx.LogEntry.Message)
 			reqCtx.LogInfo()
 		case http.StatusNotFound:
 			reqCtx.Response.Status = 404
-			reqCtx.Response.Errors = apiError.Errors
+			reqCtx.Response.Errors = apiError.Body
 			reqCtx.LogWarn()
 		case http.StatusConflict:
 			reqCtx.Response.Status = 409
-			reqCtx.Response.Errors = apiError.Errors
+			reqCtx.Response.Errors = apiError.Body
 			reqCtx.LogEntry = reqCtx.LogEntry.WithError(apiError)
 			reqCtx.LogWarn()
 		default:
 			reqCtx.Response.Status = 500
-			reqCtx.Response.Errors = apiError.Errors
+			reqCtx.Response.Errors = apiError.Body
 			reqCtx.LogEntry = reqCtx.LogEntry.WithError(apiError)
 			reqCtx.LogError()
 		}
@@ -86,4 +89,4 @@ func (app *App) newRequestContext() *RequestContext {
 }
 
 // handler inserts the request scope
-type handlerFunc func(http.ResponseWriter, *http.Request, *RequestContext) (int, interface{}, *AppError)
+type handlerFunc func(http.ResponseWriter, *http.Request, *RequestContext) (int, interface{}, *todoErr.APIError)

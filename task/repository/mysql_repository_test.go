@@ -26,15 +26,15 @@ func TestGetByID(t *testing.T) {
 		NewRows([]string{"id", "description", "created_by", "is_complete", "created_at", "updated_at"}).
 		AddRow(1, "description", 1, false, time.Now(), time.Now())
 
-	taskId := int64(1)
+	taskID := int64(1)
 	query := "SELECT id, description, created_by, is_complete, created_at, updated_at FROM task WHERE id=\\?"
 
 	prep := mock.ExpectPrepare(query)
-	prep.ExpectQuery().WithArgs(taskId).WillReturnRows(rows)
+	prep.ExpectQuery().WithArgs(taskID).WillReturnRows(rows)
 
 	repo := repository.New(db)
 
-	task, err := repo.GetByID(context.TODO(), taskId)
+	task, err := repo.GetByID(context.TODO(), taskID)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, task)
