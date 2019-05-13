@@ -68,9 +68,9 @@ func main() {
 		Logger: logger,
 	}
 
-	cfgJson, err := json.Marshal(app.Config)
+	cfgJSON, _ := json.Marshal(app.Config)
 
-	fmt.Println(string(cfgJson))
+	fmt.Println(string(cfgJSON))
 
 	router := mux.NewRouter()
 	userRepo := _userRepo.New(dbConn)

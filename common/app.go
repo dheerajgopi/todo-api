@@ -50,6 +50,11 @@ func (app *App) CreateHandler(fn handlerFunc) func(res http.ResponseWriter, req 
 			reqCtx.Response.Errors = apiError.Body
 			fmt.Println(reqCtx.LogEntry.Message)
 			reqCtx.LogInfo()
+		case http.StatusForbidden:
+			reqCtx.Response.Status = 403
+			reqCtx.Response.Errors = apiError.Body
+			fmt.Println(reqCtx.LogEntry.Message)
+			reqCtx.LogWarn()
 		case http.StatusNotFound:
 			reqCtx.Response.Status = 404
 			reqCtx.Response.Errors = apiError.Body
