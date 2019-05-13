@@ -163,6 +163,44 @@ func TestGenerateAuthTokenForMissingUser(t *testing.T) {
 		Resource: "user",
 	}
 
-	assert.Equal("", token)
+	assert.Empty(token)
 	assert.Equal(resourceNotFoundError, err)
+}
+
+func TestGenerateAuthTokenForPasswordMismatch(t *testing.T) {
+	now := time.Now()
+	ctx := context.TODO()
+	assert := assert.New(t)
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	userRepoMock := repoMock.NewRepository(mockCtrl)
+	userService := service.New(userRepoMock)
+
+	email := "testName@email.com"
+	passwd := "test"
+	pswdHash, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+	jwtSecret := "secret"
+
+	newUser := &models.User{
+		Name:      "testName",
+		Email:     email,
+		Passwd:    string(pswdHash),
+		IsActive:  true,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	userRepoMock.
+		EXPECT().
+		GetByEmail(ctx, email).
+		Return(newUser, nil).
+		Times(1)
+
+	token, err := userService.GenerateAuthToken(ctx, newUser.Email, "invalid"+passwd, jwtSecret)
+
+	expectedErr := &todoErr.PasswordMismatchError{}
+
+	assert.Empty(token)
+	assert.Equal(expectedErr, err)
 }
