@@ -151,6 +151,14 @@ func (handler *UserHandler) Login(res http.ResponseWriter, req *http.Request, re
 		})
 
 		return http.StatusNotFound, nil, apiError
+	case *todoErr.PasswordMismatchError:
+		passwordMismatchErr, _ := err.(*todoErr.PasswordMismatchError)
+
+		apiError := todoErr.NewAPIError(passwordMismatchErr.Error(), &todoErr.APIErrorBody{
+			Message: "Invalid email/password",
+		})
+
+		return http.StatusForbidden, nil, apiError
 	default:
 		apiError := todoErr.NewAPIError(err.Error(), &todoErr.APIErrorBody{
 			Message: "Internal server error",
