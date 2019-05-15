@@ -9,29 +9,33 @@ import (
 
 // Config holds all application configurations
 type Config struct {
-	Env         string       `json:"env"`
-	Application *application `json:"application"`
-	Database    *database    `json:"database"`
-	Auth        *auth        `json:"auth"`
+	Env         string              `json:"env"`
+	Application *ApplicationSetting `json:"application"`
+	Database    *DatabaseSetting    `json:"database"`
+	Auth        *AuthSetting        `json:"auth"`
 }
 
-type application struct {
+// ApplicationSetting holds all general application configurations
+type ApplicationSetting struct {
 	Port           int `json:"port"`
 	RequestTimeout int `json:"requestTimeout"`
 }
 
-type database struct {
+// DatabaseSetting holds all database configurations
+type DatabaseSetting struct {
 	Address  string `json:"address"`
 	Name     string `json:"name"`
 	User     string `json:"user"`
 	Password string `json:"password"`
 }
 
-type auth struct {
-	Jwt *jwt `json:"jwt"`
+// AuthSetting holds all auth related configurations
+type AuthSetting struct {
+	Jwt *JwtSetting `json:"jwt"`
 }
 
-type jwt struct {
+// JwtSetting holds all JWT related configurations
+type JwtSetting struct {
 	Secret          string `json:"secret"`
 	ExpiryInSeconds int    `json:"expiryInSeconds"`
 }
@@ -76,7 +80,7 @@ func (config *Config) Load() error {
 // variables if its not provided in the JSON config. If case OS environment
 // variables are missing, an error will be thrown.
 func (config *Config) configureDB(viperRegistry *viper.Viper) error {
-	dbConfig := &database{}
+	dbConfig := &DatabaseSetting{}
 	db := viperRegistry.Sub("db")
 
 	if err := db.Unmarshal(dbConfig); err != nil {
@@ -123,7 +127,7 @@ func (config *Config) configureDB(viperRegistry *viper.Viper) error {
 // configureApplication will load general application configurations.
 // Port and request timeout values are optional (default values are applied).
 func (config *Config) configureApplication(viperRegistry *viper.Viper) error {
-	appConfig := &application{}
+	appConfig := &ApplicationSetting{}
 	appSettings := viperRegistry.Sub("application")
 
 	if appSettings == nil {
@@ -151,14 +155,14 @@ func (config *Config) configureApplication(viperRegistry *viper.Viper) error {
 // JWT secret is taken from OS environment variable, if missing.
 // JWT expiry time is optional (defaults applied).
 func (config *Config) configureAuth(viperRegistry *viper.Viper) error {
-	authConfig := &auth{}
+	authConfig := &AuthSetting{}
 	authSettings := viperRegistry.Sub("auth")
 
 	if authSettings == nil {
 		return errors.New("auth section missing in configuration")
 	}
 
-	jwtConfig := &jwt{}
+	jwtConfig := &JwtSetting{}
 
 	jwtSettings := authSettings.Sub("jwt")
 
