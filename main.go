@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 
 	"gopkg.in/natefinch/lumberjack.v2"
 
@@ -45,10 +46,10 @@ func main() {
 	}
 
 	dbConfig := mysql.NewConfig()
-	dbConfig.User = "root"
-	dbConfig.Passwd = "root"
-	dbConfig.Addr = "0.0.0.0:3307"
-	dbConfig.DBName = "todo"
+	dbConfig.User = cfg.Database.User
+	dbConfig.Passwd = cfg.Database.Password
+	dbConfig.Addr = cfg.Database.Address
+	dbConfig.DBName = cfg.Database.Name
 	dbConfig.Net = "tcp"
 	dbConfig.ParseTime = true
 
@@ -77,6 +78,7 @@ func main() {
 	userService := _userService.New(userRepo)
 	_userHttpDelivery.New(router, userService, app)
 
-	logger.Info("Starting server at port 8080")
-	logger.Fatal(http.ListenAndServe(":8080", router))
+	port := strconv.Itoa(cfg.Application.Port)
+	logger.Info(fmt.Sprintf("Starting server at port %s", port))
+	logger.Fatal(http.ListenAndServe(":"+port, router))
 }
