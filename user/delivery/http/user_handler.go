@@ -100,7 +100,11 @@ func (handler *UserHandler) Create(res http.ResponseWriter, req *http.Request, r
 		UpdatedAt: newUser.UpdatedAt,
 	}
 
-	return http.StatusCreated, userData, nil
+	responseData := &CreateUserResponse{
+		User: &userData,
+	}
+
+	return http.StatusCreated, responseData, nil
 }
 
 // Login will validate user credentials and return a token
