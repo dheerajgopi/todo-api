@@ -5,7 +5,6 @@ import (
 	"database/sql"
 
 	"github.com/dheerajgopi/todo-api/models"
-	"github.com/sirupsen/logrus"
 
 	"github.com/dheerajgopi/todo-api/task"
 )
@@ -25,7 +24,6 @@ func (repo *mySQLRepo) getOne(ctx context.Context, query string, args ...interfa
 	stmt, err := repo.DB.PrepareContext(ctx, query)
 
 	if err != nil {
-		logrus.Error(err)
 		return nil, err
 	}
 
@@ -35,6 +33,7 @@ func (repo *mySQLRepo) getOne(ctx context.Context, query string, args ...interfa
 
 	err = row.Scan(
 		&task.ID,
+		&task.Title,
 		&task.Description,
 		&userID,
 		&task.IsComplete,
@@ -43,11 +42,10 @@ func (repo *mySQLRepo) getOne(ctx context.Context, query string, args ...interfa
 	)
 
 	if err != nil {
-		logrus.Error(err)
 		return nil, err
 	}
 
-	task.CreatedBy = models.User{
+	task.CreatedBy = &models.User{
 		ID: userID,
 	}
 
@@ -56,30 +54,25 @@ func (repo *mySQLRepo) getOne(ctx context.Context, query string, args ...interfa
 
 // GetByID will return task with the given id
 func (repo *mySQLRepo) GetByID(ctx context.Context, id int64) (*models.Task, error) {
-	query := `SELECT id, description, created_by, is_complete, created_at, updated_at
+	query := `SELECT id, title, description, created_by, is_complete, created_at, updated_at
 		FROM task WHERE id=?`
 	return repo.getOne(ctx, query, id)
 }
 
 // Create will store new task entry
 func (repo *mySQLRepo) Create(ctx context.Context, task *models.Task) error {
-	query := `INSERT INTO task (description, created_by, is_complete, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?)`
+	query := `INSERT INTO task (title, description, created_by, is_complete, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?)`
 
-	stmt, err := repo.DB.PrepareContext(ctx, query)
-
-	defer func() {
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
+	tx, err := repo.DB.BeginTx(ctx, nil)
 
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.ExecContext(
-		ctx,
+	res, err := tx.Exec(
+		query,
+		task.Title,
 		task.Description,
 		task.CreatedBy.ID,
 		task.IsComplete,
@@ -88,10 +81,18 @@ func (repo *mySQLRepo) Create(ctx context.Context, task *models.Task) error {
 	)
 
 	if err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	lastID, err := res.LastInsertId()
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
 
 	if err != nil {
 		return err

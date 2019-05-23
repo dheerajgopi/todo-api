@@ -168,7 +168,6 @@ func TestCreateWithDataConflict(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockService := mock.NewService(mockCtrl)
 	handler := setupHandler(mockService)
-	handler.UserService = mockService
 	reqCtx := setupRequestContext(handler.App)
 	req := httptest.NewRequest("POST", "/users", strings.NewReader(string(payload)))
 
@@ -206,7 +205,6 @@ func TestCreateWithServerError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockService := mock.NewService(mockCtrl)
 	handler := setupHandler(mockService)
-	handler.UserService = mockService
 	reqCtx := setupRequestContext(handler.App)
 	req := httptest.NewRequest("POST", "/users", strings.NewReader(string(payload)))
 
@@ -238,7 +236,6 @@ func TestCreate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockService := mock.NewService(mockCtrl)
 	handler := setupHandler(mockService)
-	handler.UserService = mockService
 	reqCtx := setupRequestContext(handler.App)
 	req := httptest.NewRequest("POST", "/users", strings.NewReader(string(payload)))
 
@@ -358,7 +355,6 @@ func TestLoginWithDataConflict(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockService := mock.NewService(mockCtrl)
 	handler := setupHandler(mockService)
-	handler.UserService = mockService
 	reqCtx := setupRequestContext(handler.App)
 	req := httptest.NewRequest("POST", "/login", strings.NewReader(string(payload)))
 
@@ -394,7 +390,6 @@ func TestLoginWithMismatchingPassword(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockService := mock.NewService(mockCtrl)
 	handler := setupHandler(mockService)
-	handler.UserService = mockService
 	reqCtx := setupRequestContext(handler.App)
 	req := httptest.NewRequest("POST", "/login", strings.NewReader(string(payload)))
 
@@ -427,7 +422,6 @@ func TestLoginWithServerError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockService := mock.NewService(mockCtrl)
 	handler := setupHandler(mockService)
-	handler.UserService = mockService
 	reqCtx := setupRequestContext(handler.App)
 	req := httptest.NewRequest("POST", "/login", strings.NewReader(string(payload)))
 
@@ -460,7 +454,6 @@ func TestLogin(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	mockService := mock.NewService(mockCtrl)
 	handler := setupHandler(mockService)
-	handler.UserService = mockService
 	reqCtx := setupRequestContext(handler.App)
 	req := httptest.NewRequest("POST", "/login", strings.NewReader(string(payload)))
 

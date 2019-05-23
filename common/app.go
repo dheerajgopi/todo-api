@@ -18,7 +18,7 @@ type App struct {
 }
 
 // CreateHandler creates a new HandlerFunc with a new RequestContext per request
-func (app *App) CreateHandler(fn handlerFunc) func(res http.ResponseWriter, req *http.Request) {
+func (app *App) CreateHandler(fn HandlerFunc) func(res http.ResponseWriter, req *http.Request) {
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		reqCtx := app.newRequestContext()
@@ -93,5 +93,5 @@ func (app *App) newRequestContext() *RequestContext {
 	}
 }
 
-// handler inserts the request scope
-type handlerFunc func(http.ResponseWriter, *http.Request, *RequestContext) (int, interface{}, *todoErr.APIError)
+// HandlerFunc inserts the request scope
+type HandlerFunc func(http.ResponseWriter, *http.Request, *RequestContext) (int, interface{}, *todoErr.APIError)

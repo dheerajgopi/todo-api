@@ -11,6 +11,7 @@ type RequestContext struct {
 	RequestID string
 	Response  *APIResponse
 	LogEntry  *logrus.Entry
+	UserID    int64
 }
 
 // AddLogFields will add the specified fields to the LogEntry

@@ -16,6 +16,9 @@ import (
 
 	common "github.com/dheerajgopi/todo-api/common"
 	"github.com/dheerajgopi/todo-api/config"
+	_taskHttpDelivery "github.com/dheerajgopi/todo-api/task/delivery/http"
+	_taskRepo "github.com/dheerajgopi/todo-api/task/repository"
+	_taskService "github.com/dheerajgopi/todo-api/task/service"
 	_userHttpDelivery "github.com/dheerajgopi/todo-api/user/delivery/http"
 	_userRepo "github.com/dheerajgopi/todo-api/user/repository"
 	_userService "github.com/dheerajgopi/todo-api/user/service"
@@ -74,9 +77,16 @@ func main() {
 	fmt.Println(string(cfgJSON))
 
 	router := mux.NewRouter()
+
+	// user service
 	userRepo := _userRepo.New(dbConn)
 	userService := _userService.New(userRepo)
 	_userHttpDelivery.New(router, userService, app)
+
+	// task service
+	taskRepo := _taskRepo.New(dbConn)
+	taskService := _taskService.New(taskRepo)
+	_taskHttpDelivery.New(router, taskService, app)
 
 	port := strconv.Itoa(cfg.Application.Port)
 	logger.Info(fmt.Sprintf("Starting server at port %s", port))
