@@ -30,6 +30,7 @@ func New(router *mux.Router, service task.Service, app *common.App) {
 	jwtMiddleware := middlewares.JwtValidator(app.Config.Auth.Jwt.Secret)
 
 	router.HandleFunc("/tasks", app.CreateHandler(jwtMiddleware(handler.Create))).Methods("POST")
+	router.HandleFunc("/tasks", app.CreateHandler(jwtMiddleware(handler.List))).Methods("GET")
 }
 
 // Create will store new task
@@ -94,4 +95,39 @@ func (handler *TaskHandler) Create(res http.ResponseWriter, req *http.Request, r
 	}
 
 	return http.StatusCreated, responseData, nil
+}
+
+// List will return all tasks
+func (handler *TaskHandler) List(res http.ResponseWriter, req *http.Request, reqCtx *common.RequestContext) (int, interface{}, *todoErr.APIError) {
+	taskList := make([]*TaskData, 0)
+
+	tasksByUserID, err := handler.TaskService.List(context.TODO(), reqCtx.UserID)
+
+	switch err {
+	case nil:
+		break
+	default:
+		apiError := todoErr.NewAPIError(err.Error(), &todoErr.APIErrorBody{
+			Message: "Internal server error",
+		})
+
+		return http.StatusInternalServerError, nil, apiError
+	}
+
+	for _, task := range tasksByUserID {
+		taskList = append(taskList, &TaskData{
+			ID:          task.ID,
+			Title:       task.Title,
+			Description: task.Description,
+			IsComplete:  task.IsComplete,
+			CreatedAt:   task.CreatedAt,
+			UpdatedAt:   task.UpdatedAt,
+		})
+	}
+
+	responseData := &ListTaskResponse{
+		Tasks: taskList,
+	}
+
+	return http.StatusOK, responseData, nil
 }

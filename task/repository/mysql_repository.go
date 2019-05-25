@@ -102,3 +102,57 @@ func (repo *mySQLRepo) Create(ctx context.Context, task *models.Task) error {
 
 	return nil
 }
+
+// GetAllByUserID returns list of tasks created by an user
+func (repo *mySQLRepo) GetAllByUserID(ctx context.Context, userID int64) ([]*models.Task, error) {
+	query := `SELECT id, title, description, created_by, is_complete, created_at, updated_at
+		FROM task WHERE created_by=?`
+
+	stmt, err := repo.DB.PrepareContext(ctx, query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.QueryContext(ctx, userID)
+	defer rows.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := make([]*models.Task, 0)
+
+	for rows.Next() {
+		task := &models.Task{}
+		userID := int64(0)
+
+		err = rows.Scan(
+			&task.ID,
+			&task.Title,
+			&task.Description,
+			&userID,
+			&task.IsComplete,
+			&task.CreatedAt,
+			&task.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		task.CreatedBy = &models.User{
+			ID: userID,
+		}
+
+		tasks = append(tasks, task)
+	}
+
+	err = rows.Err()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+}
