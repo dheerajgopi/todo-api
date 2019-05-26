@@ -81,3 +81,32 @@ func TestCreate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), task.ID)
 }
+
+func TestGetAllByUserID(t *testing.T) {
+	assert := assert.New(t)
+	db, mock, err := sqlmock.New()
+
+	if err != nil {
+		t.Fatalf("Unexpected error while opening stub DB connection: %s", err)
+	}
+
+	defer db.Close()
+
+	rows := sqlmock.
+		NewRows([]string{"id", "title", "description", "created_by", "is_complete", "created_at", "updated_at"}).
+		AddRow(1, "title", "description", 1, false, time.Now(), time.Now())
+
+	userID := int64(1)
+	query := "SELECT id, title, description, created_by, is_complete, created_at, updated_at FROM task WHERE created_by=\\?"
+
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectQuery().WithArgs(userID).WillReturnRows(rows)
+
+	repo := repository.New(db)
+
+	tasks, err := repo.GetAllByUserID(context.TODO(), userID)
+
+	assert.NoError(err)
+	assert.NotNil(tasks)
+	assert.Equal(1, len(tasks))
+}

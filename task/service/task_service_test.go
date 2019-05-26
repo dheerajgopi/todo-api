@@ -75,3 +75,68 @@ func TestCreateWithError(t *testing.T) {
 
 	assert.Error(err)
 }
+
+func TestList(t *testing.T) {
+	now := time.Now()
+	userID := int64(1)
+	ctx := context.TODO()
+	assert := assert.New(t)
+	mockCtrl := gomock.NewController(t)
+
+	defer mockCtrl.Finish()
+
+	mockRepo := taskMock.NewRepository(mockCtrl)
+	taskService := service.New(mockRepo)
+
+	tasks := make([]*models.Task, 0)
+	tasks = append(tasks, &models.Task{
+		Title:       "testTitle",
+		Description: "test description",
+		CreatedBy: &models.User{
+			ID: userID,
+		},
+		IsComplete: false,
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	})
+
+	mockRepo.
+		EXPECT().
+		GetAllByUserID(ctx, userID).
+		Return(tasks, nil).
+		Times(1)
+
+	expectedResult, err := taskService.List(ctx, userID)
+
+	assert.NoError(err)
+	assert.NotNil(expectedResult)
+	assert.Equal(1, len(tasks))
+	assert.Equal("testTitle", tasks[0].Title)
+	assert.Equal("test description", tasks[0].Description)
+	assert.Equal(false, tasks[0].IsComplete)
+	assert.Equal(now, tasks[0].CreatedAt)
+	assert.Equal(now, tasks[0].UpdatedAt)
+}
+
+func TestListWithError(t *testing.T) {
+	ctx := context.TODO()
+	userID := int64(1)
+	assert := assert.New(t)
+	mockCtrl := gomock.NewController(t)
+
+	defer mockCtrl.Finish()
+
+	mockRepo := taskMock.NewRepository(mockCtrl)
+	taskService := service.New(mockRepo)
+
+	mockRepo.
+		EXPECT().
+		GetAllByUserID(ctx, userID).
+		Return(nil, errors.New("error")).
+		Times(1)
+
+	tasks, err := taskService.List(ctx, userID)
+
+	assert.Error(err)
+	assert.Nil(tasks)
+}

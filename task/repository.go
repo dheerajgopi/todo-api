@@ -8,6 +8,7 @@ import (
 
 // Repository represents task's repository contract
 type Repository interface {
+	GetAllByUserID(ctx context.Context, userID int64) ([]*models.Task, error)
 	GetByID(ctx context.Context, id int64) (*models.Task, error)
 	Create(ctx context.Context, task *models.Task) error
 }

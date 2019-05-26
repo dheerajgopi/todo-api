@@ -6,9 +6,11 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dheerajgopi/todo-api/common"
 	"github.com/dheerajgopi/todo-api/config"
+	"github.com/dheerajgopi/todo-api/models"
 	"github.com/dheerajgopi/todo-api/task"
 	_taskHandler "github.com/dheerajgopi/todo-api/task/delivery/http"
 	mock "github.com/dheerajgopi/todo-api/task/mock"
@@ -118,6 +120,74 @@ func TestCreate(t *testing.T) {
 	assert.Equal(reqBody.Title, responseData.Task.Title)
 	assert.Equal(reqBody.Description, responseData.Task.Description)
 	assert.Equal(false, responseData.Task.IsComplete)
+}
+
+func TestListWithServerError(t *testing.T) {
+	assert := assert.New(t)
+	mockCtrl := gomock.NewController(t)
+	mockService := mock.NewService(mockCtrl)
+	handler := setupHandler(mockService)
+	reqCtx := setupRequestContext(handler.App)
+
+	req := httptest.NewRequest("GET", "/tasks", nil)
+
+	mockService.
+		EXPECT().
+		List(gomock.Any(), gomock.Any()).
+		Return(nil, errors.New("server error")).
+		Times(1)
+
+	status, data, err := handler.List(httptest.NewRecorder(), req, reqCtx)
+
+	assert.Equal(500, status)
+	assert.Nil(data)
+	assert.NotNil(err)
+	assert.Equal(1, len(err.Body))
+	assert.Equal("Internal server error", err.Body[0].Message)
+}
+
+func TestList(t *testing.T) {
+	now := time.Now()
+	assert := assert.New(t)
+	mockCtrl := gomock.NewController(t)
+	mockService := mock.NewService(mockCtrl)
+	handler := setupHandler(mockService)
+	reqCtx := setupRequestContext(handler.App)
+
+	req := httptest.NewRequest("GET", "/tasks", nil)
+
+	expectedData := make([]*models.Task, 0)
+	expectedData = append(expectedData, &models.Task{
+		ID:          1,
+		Title:       "test title",
+		Description: "test description",
+		CreatedBy: &models.User{
+			ID: reqCtx.UserID,
+		},
+		IsComplete: false,
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	})
+
+	mockService.
+		EXPECT().
+		List(gomock.Any(), gomock.Any()).
+		Return(expectedData, nil).
+		Times(1)
+
+	status, data, err := handler.List(httptest.NewRecorder(), req, reqCtx)
+
+	actualData := data.(*_taskHandler.ListTaskResponse)
+
+	assert.Equal(200, status)
+	assert.Nil(err)
+	assert.NotNil(data)
+	assert.Equal(1, len(actualData.Tasks))
+	assert.Equal("test title", actualData.Tasks[0].Title)
+	assert.Equal("test description", actualData.Tasks[0].Description)
+	assert.Equal(false, actualData.Tasks[0].IsComplete)
+	assert.Equal(now, actualData.Tasks[0].CreatedAt)
+	assert.Equal(now, actualData.Tasks[0].UpdatedAt)
 }
 
 func setupHandler(mockService task.Service) *_taskHandler.TaskHandler {

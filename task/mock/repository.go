@@ -48,6 +48,21 @@ func (mr *RepositoryMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*Repository)(nil).Create), arg0, arg1)
 }
 
+// GetAllByUserID mocks base method
+func (m *Repository) GetAllByUserID(arg0 context.Context, arg1 int64) ([]*models.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllByUserID", arg0, arg1)
+	ret0, _ := ret[0].([]*models.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllByUserID indicates an expected call of GetAllByUserID
+func (mr *RepositoryMockRecorder) GetAllByUserID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByUserID", reflect.TypeOf((*Repository)(nil).GetAllByUserID), arg0, arg1)
+}
+
 // GetByID mocks base method
 func (m *Repository) GetByID(arg0 context.Context, arg1 int64) (*models.Task, error) {
 	m.ctrl.T.Helper()
