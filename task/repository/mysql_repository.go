@@ -3,7 +3,10 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 
+	"github.com/dheerajgopi/todo-api/common"
 	"github.com/dheerajgopi/todo-api/models"
 
 	"github.com/dheerajgopi/todo-api/task"
@@ -104,9 +107,22 @@ func (repo *mySQLRepo) Create(ctx context.Context, task *models.Task) error {
 }
 
 // GetAllByUserID returns list of tasks created by an user
-func (repo *mySQLRepo) GetAllByUserID(ctx context.Context, userID int64) ([]*models.Task, error) {
+func (repo *mySQLRepo) GetAllByUserID(ctx context.Context, userID int64, page *common.Page) ([]*models.Task, error) {
 	query := `SELECT id, title, description, created_by, is_complete, created_at, updated_at
 		FROM task WHERE created_by=?`
+
+	sorts := make([]string, 0)
+
+	for _, sort := range page.Sort {
+		sorts = append(sorts, sort.Field+` `+sort.Direction)
+	}
+
+	if len(sorts) > 0 {
+		query = query + ` ORDER BY ` + strings.Join(sorts, `, `)
+	}
+
+	query = query + ` limit ?`
+	fmt.Println(query)
 
 	stmt, err := repo.DB.PrepareContext(ctx, query)
 
@@ -114,7 +130,7 @@ func (repo *mySQLRepo) GetAllByUserID(ctx context.Context, userID int64) ([]*mod
 		return nil, err
 	}
 
-	rows, err := stmt.QueryContext(ctx, userID)
+	rows, err := stmt.QueryContext(ctx, userID, page.Limit)
 	defer rows.Close()
 
 	if err != nil {

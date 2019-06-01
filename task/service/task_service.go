@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/dheerajgopi/todo-api/common"
 	"github.com/dheerajgopi/todo-api/models"
 	"github.com/dheerajgopi/todo-api/task"
 )
@@ -24,6 +25,6 @@ func (service *taskService) Create(ctx context.Context, newTask *models.Task) er
 }
 
 // List returns tasks created by an user
-func (service *taskService) List(ctx context.Context, userID int64) ([]*models.Task, error) {
-	return service.taskRepo.GetAllByUserID(ctx, userID)
+func (service *taskService) List(ctx context.Context, userID int64, page *common.Page) ([]*models.Task, error) {
+	return service.taskRepo.GetAllByUserID(ctx, userID, page)
 }

@@ -2,8 +2,10 @@ package http
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/dheerajgopi/todo-api/common"
@@ -27,10 +29,15 @@ func New(router *mux.Router, service task.Service, app *common.App) {
 		App:         app,
 	}
 
+	supportedFields := make(map[string]common.FieldType)
+	supportedFields["title"] = common.STRING
+	supportedFields["created_at"] = common.UNIXTIME
+
 	jwtMiddleware := middlewares.JwtValidator(app.Config.Auth.Jwt.Secret)
+	paginator := middlewares.Paginator(supportedFields)
 
 	router.HandleFunc("/tasks", app.CreateHandler(jwtMiddleware(handler.Create))).Methods("POST")
-	router.HandleFunc("/tasks", app.CreateHandler(jwtMiddleware(handler.List))).Methods("GET")
+	router.HandleFunc("/tasks", app.CreateHandler(jwtMiddleware(paginator(handler.List)))).Methods("GET")
 }
 
 // Create will store new task
@@ -99,9 +106,20 @@ func (handler *TaskHandler) Create(res http.ResponseWriter, req *http.Request, r
 
 // List will return all tasks
 func (handler *TaskHandler) List(res http.ResponseWriter, req *http.Request, reqCtx *common.RequestContext) (int, interface{}, *todoErr.APIError) {
+	// sortFields := [...]string{
+	// 	"id",
+	// 	"title",
+	// 	"created_at"
+	// }
+
+	// reqCtx.Page.Sort = append(reqCtx.Page.Sort, &common.Sort{
+	// 	Field:     "id",
+	// 	Direction: "desc",
+	// })
+
 	taskList := make([]*TaskData, 0)
 
-	tasksByUserID, err := handler.TaskService.List(context.TODO(), reqCtx.UserID)
+	tasksByUserID, err := handler.TaskService.List(context.TODO(), reqCtx.UserID, reqCtx.Page)
 
 	switch err {
 	case nil:
@@ -125,8 +143,31 @@ func (handler *TaskHandler) List(res http.ResponseWriter, req *http.Request, req
 		})
 	}
 
+	var pageLen int
+	pageInfo := Cursor{}
+
+	if pageLen = len(taskList); pageLen == 0 {
+		pageInfo.HasNext = false
+	} else {
+		lastRow := taskList[pageLen-1]
+		pageInfo.HasNext = true
+
+		for _, sort := range reqCtx.Page.Sort {
+			switch sort.Field {
+			case "title":
+				sort.LastVal = lastRow.Title
+			case "id":
+				sort.LastVal = strconv.FormatInt(lastRow.ID, 10)
+			}
+		}
+
+		cursorJSON, _ := json.Marshal(reqCtx.Page.Sort)
+		pageInfo.Next = base64.URLEncoding.EncodeToString(cursorJSON)
+	}
+
 	responseData := &ListTaskResponse{
-		Tasks: taskList,
+		Tasks:    taskList,
+		PageInfo: pageInfo,
 	}
 
 	return http.StatusOK, responseData, nil
